@@ -41,7 +41,8 @@ def generate_relation() -> Tuple[Fp, List[Fp]]:
 
 #witness, trace = generate_relation()
 witness, trace = Fp(3141592), compute_square_fibonacci_trace(Fp(1), Fp(3141592), k)
-print(f"Example verifier's relation is ({witness}, {trace[-1]})")
+y = trace[-1] # Claimed kth Square Fibonacci number
+print(f"Example verifier's relation is ({witness}, {y})")
 
 # Now, we are going to use the multiplicative
 # subgroup of Fp, so we need to verify that 
@@ -57,8 +58,8 @@ l = 1024 # Order of a subgroup
 
 # Finding g such that g generates a subgroup of order 1024
 assert (p - 1) % l == 0, f"There is no g that generates a subgroup of size {l}"
-k = (p - 1) // l
-g = w**k
+q = (p - 1) // l
+g = w**q
 
 # Defining the subgroup
 G = [g**i for i in range(l)]
@@ -67,7 +68,7 @@ G = [g**i for i in range(l)]
 assert g.multiplicative_order() == l, "g was found incorrectly"
 
 # Defining the polynomial ring
-R = Fp['X']
+R.<X> = PolynomialRing(Fp)
 f = R.lagrange_polynomial([(G[i], trace[i]) for i in range(l-1)])
 print(f"Polynomial at X=2 equals {f(2)}")
 
@@ -75,8 +76,8 @@ print(f"Polynomial at X=2 equals {f(2)}")
 L = 8*l
 # Finding h
 assert (p - 1) % L == 0, f"There is no h that generates a subgroup of size {L}"
-k = (p - 1) // L
-h = w**k
+q = (p - 1) // L
+h = w**q
 
 # Defining the subgroup H and D
 H = [h**i for i in range(L)]
@@ -92,3 +93,58 @@ assert len(set(H)) == len(H), "No duplicates are present in H"
 f_D = [f(d) for d in D]
 f_commitment = MerkleTree(f_D)
 print(f'Commitment to the given polynomial is {f_commitment.get_root()}')
+
+# Now, we want to verift the polynomial constraints. We need to prove that:
+# 1. trace[0] = 1, meaning (X - g^0) | (f(X) - 1)
+# 2. trace[k] = y, meaning (X - g^k) | (f(X) - y)
+# 3. For each u = g^i, i in [1020], we have (X - u) | (f(g^2*X) - f(g*X)^2 - f(X)^2)
+# 
+# The last condition implies that product (X - g^i) for each i in [1020] should 
+# divide the polynomial f(g^2*X) - f(g*X)^2 - f(X)^2
+
+# Bulding polynomial p0(X) = (f(X) - 1) / (X - g^0)
+assert (f - 1) % (X - g**0) == 0, "f(1) is not equal to 1"
+p0 = (f - 1) / (X - g**0) # Our first constraint
+
+# Building polynomial p1(X) = (f(X) - y) / (X - g^k)
+assert (f - y) % (X - g**k) == 0, f"f({g**k}) is not equal to {y}"
+p1 = (f - y) / (X - g**k) # Our second constraint
+
+# Building polynomial p2(X) = (f(g^2*X) - f(g*X)^2 - f(X)^2) / (\prod_{i=0}^k of X - g^i)
+# Now, the product can be evaluated more effectively. Notice that the product is equal to
+# \prod_{g \in G}(X-g) / {\prod_{i=k+1}^{ |G| } (X - g^i)}, where the former product is
+# simply X^(|G|) - 1 while the latter is relatively small
+p2_denominator = (X**l - 1) / prod([X - g**i for i in range(k-1, l)])
+# Now, let us check why this holds
+assert p2_denominator == prod([X - g**i for i in range(k-1)]), "Denominator is not correct"
+
+# Now, we can build the polynomial p2(X)
+p2 = (f(g**2*X) - f(g*X)**2 - f(X)**2) / p2_denominator
+
+def build_composition_polynomial() -> PolynomialRing:
+    """
+    Builds the composition polynomial p(X) = alpha_0 * p0(X) + alpha_1 * p1(X) + alpha_2 * p2(X)
+    for some random field elements alpha_0, alpha_1, alpha_2
+    """
+
+    # Picking random alpha's
+    alpha_0 = Fp.random_element()
+    alpha_1 = Fp.random_element()
+    alpha_2 = Fp.random_element()
+
+    # Building the polynomial
+    cp = alpha_0 * p0 + alpha_1 * p1 + alpha_2 * p2
+    return cp
+
+def get_composition_polynomial_evaluation(D: List[Fp]) -> List[Fp]:
+    """
+    Evaluates the composition polynomial at each point of D
+    """
+
+    cp = build_composition_polynomial()
+    return [cp(d) for d in D]
+
+# Now, we are building the commitment
+cp_D = get_composition_polynomial_evaluation(D)
+cp_commitment = MerkleTree(cp_D)
+print(f'Commitment to the composition polynomial is {cp_commitment.get_root()}')
