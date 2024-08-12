@@ -2,7 +2,8 @@ from __future__ import annotations
 from typing import List, Tuple, TypeAlias
 from field import p, w, Fp
 from merkle_tree import MerkleTree
-from fri import FRILayer
+from channel import Channel
+from fri import FRILayer, FRICommitment
 
 def compute_square_fibonacci_trace(x0: Fp, x1: Fp, k: Integer) -> List[Fp]:
     """
@@ -136,7 +137,7 @@ def build_composition_polynomial() -> PolynomialRing:
 
     # Building the polynomial
     cp = alpha_0 * p0 + alpha_1 * p1 + alpha_2 * p2
-    return cp
+    return R(cp)
 
 def get_composition_polynomial_evaluation(D: List[Fp]) -> List[Fp]:
     """
@@ -150,3 +151,13 @@ def get_composition_polynomial_evaluation(D: List[Fp]) -> List[Fp]:
 cp_D = get_composition_polynomial_evaluation(D)
 cp_commitment = MerkleTree(cp_D)
 print(f'Commitment to the composition polynomial is {cp_commitment.get_root()}')
+
+# Now, let us do the FRI commitment
+test_channel = Channel()
+cp = build_composition_polynomial()
+commitment = FRICommitment(cp, D, test_channel).commit()
+
+fri_polys, fri_domains, fri_layers, fri_merkles = commitment
+assert len(fri_layers) == 11, "Number of layers is not correct"
+assert len(fri_layers[-1]) == 8, "Last layer is not correct"
+assert len(set(fri_layers[-1])) == 1, "All elements in the last layer are identical"

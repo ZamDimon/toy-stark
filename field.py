@@ -7,3 +7,6 @@ _sage_const_3 = Integer(3); _sage_const_1 = Integer(1); _sage_const_30 = Integer
 p = _sage_const_3 *(_sage_const_1 <<_sage_const_30 ) + _sage_const_1 
 Fp = GF(p, modulus='primitive', names=('w',)); (w,) = Fp._first_ngens(1)# Defining a prime field with generator w
 
+# Polynomial ring over Fp
+R = PolynomialRing(Fp, names=('X',)); (X,) = R._first_ngens(1)
+
