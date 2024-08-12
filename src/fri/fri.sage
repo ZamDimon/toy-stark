@@ -2,9 +2,9 @@ from __future__ import annotations
 from typing import List, Tuple, TypeAlias
 import unittest
 
-from field import p, w, Fp, R, X
-from merkle_tree import MerkleTree
-from channel import Channel
+from src.math.field import p, w, Fp, R, X
+from src.utils.merkle_tree import MerkleTree
+from src.utils.channel import Channel
 
 class FRILayer:
     """

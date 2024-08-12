@@ -1,6 +1,6 @@
 import inspect
 from hashlib import sha256
-from field import Fp, p
+from src.math.field import Fp, p
 
 
 def serialize(entity: object) -> str:

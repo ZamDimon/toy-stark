@@ -1,9 +1,11 @@
 from __future__ import annotations
 from typing import List, Tuple, TypeAlias
-from field import p, w, Fp
-from merkle_tree import MerkleTree
-from channel import Channel
-from fri import FRILayer, FRICommitment
+
+# Internal imports
+from src.math.field import p, w, Fp
+from src.utils.merkle_tree import MerkleTree
+from src.utils.channel import Channel
+from src.fri.fri import FRILayer, FRICommitment
 
 def compute_square_fibonacci_trace(x0: Fp, x1: Fp, k: Integer) -> List[Fp]:
     """

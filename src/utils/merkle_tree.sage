@@ -1,7 +1,7 @@
 from typing import List
 from hashlib import sha256
 from math import log2, ceil
-from field import Fp
+from src.math.field import Fp
 
 class MerkleTree(object):
     """
