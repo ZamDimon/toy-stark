@@ -1,6 +1,8 @@
-from typing import List, Tuple
+from __future__ import annotations
+from typing import List, Tuple, TypeAlias
 from field import p, w, Fp
 from merkle_tree import MerkleTree
+from fri import FRILayer
 
 def compute_square_fibonacci_trace(x0: Fp, x1: Fp, k: Integer) -> List[Fp]:
     """
