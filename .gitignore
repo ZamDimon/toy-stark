@@ -1,3 +1,7 @@
+# Well, this might seem strange, but we are going to ignore all python files
+*.py
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

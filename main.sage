@@ -9,7 +9,7 @@ def compute_square_fibonacci_trace(x0: Fp, x1: Fp, k: Integer) -> List[Fp]:
     """
     Based on provided x[0] and x[1], calculates the x[k] which
     is given by the following relation:
-    x[k+2] = x[k]**2 - x[k+1]**2
+    x[k+2] = x[k]**2 + x[k+1]**2
     """
 
     trace = [x0, x1] # Initialize the trace with x[0] and x[1]
