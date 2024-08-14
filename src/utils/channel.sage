@@ -14,7 +14,7 @@ def serialize(entity: object) -> str:
     return entity._serialize_()
 
 
-class Channel():
+class Channel:
     """
     A Channel instance can be used by a prover or a verifier to preserve the semantics of an
     interactive proof system, while under the hood it is in fact non-interactive, and uses Sha256
