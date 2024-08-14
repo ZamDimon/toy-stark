@@ -23,9 +23,12 @@ if __name__ == "__main__":
     codeword_tree = MerkleTree(codeword)
     print(f'Commitment to the composition polynomial is {codeword_tree.get_root()}')
     
-    commitment = FRICommitment(R(composition_polynomial), get_fri_domain(), channel).commit()
+    commitment = FRICommitment(R(composition_polynomial), get_fri_domain(), channel)
+    commitment.commit()
+    commitment.decommit()
 
-    fri_polys, fri_domains, fri_layers, fri_merkles = commitment
-    assert len(fri_layers) == 11, "Number of layers is not correct"
-    assert len(fri_layers[-1]) == 8, "Last layer is not correct"
-    assert len(set(fri_layers[-1])) == 1, "All elements in the last layer are identical"
+    # Saving proof to proof.txt file
+    with open('proof.txt', 'w') as f:
+        f.write(str(channel._proof))
+    
+    print("Proof generated successfully!")
